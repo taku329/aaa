@@ -11,7 +11,7 @@
         tick: function () {}
       });
 
-      <!--落下コンポーネント-->
+      /* 落下コンポーネント */
       AFRAME.registerComponent('petal-fall', {
         schema: { floorY: { type: 'number', default: -10 }, topY: { type: 'number', default: 50 } },
         init: function () {
@@ -26,7 +26,7 @@
           const angle = Math.random() * Math.PI * 2;
           const minR = 50, maxR = 200;
           const t = Math.random();
-          const radius = Math.sqrt(minR*minR + t * (maxR*maxR - minR*minR));
+          const radius = Math.sqrt(minR*minR + t * (maxR*maxR - minR*maxR));
           const x = radius * Math.cos(angle);
           const z = radius * Math.sin(angle);
           this.el.setAttribute('position', `${x} ${this.data.topY} ${z}`);
@@ -41,6 +41,7 @@
         }
       });
 
+      /* 桜リング配置 */
       AFRAME.registerComponent('skr', {
         schema: {
           radii: { type: 'string', default: '50, 200' },
@@ -77,14 +78,15 @@
         }
       });
 
+      /* 花びら生成 */
       document.addEventListener('DOMContentLoaded', () => {
         const scene = document.querySelector('a-scene');
-        const COUNT = 700;
+        const COUNT = 400;
         const FIXED_SCALE = '0.5 0.5 0.5';
 
         for (let i = 0; i < COUNT; i++) {
           const ent = document.createElement('a-entity');
-          ent.setAttribute('petal-fall', { floorY: 0, topY: 50 });
+          ent.setAttribute('petal-fall', { floorY: -10, topY: 50 });
           ent.setAttribute('scale', FIXED_SCALE);
           ent.setAttribute('gltf-model', '#test2');
           scene.appendChild(ent);
@@ -99,13 +101,15 @@
         <a-asset-item id="test1" src="sakuranoki_1ver2.glb"></a-asset-item>
         <a-asset-item id="test2" src="hanabira.glb"></a-asset-item>
         <a-asset-item id="kusa" src="kusa8.glb"></a-asset-item>
+        <a-asset-item id="sky" src="sky2.glb"></a-asset-item>
       </a-assets>
 
+      <!-- カメラ -->
       <a-entity id="cameraRig" position="0 1.6 0" lock-y="y: 3.2">
         <a-entity camera look-controls wasd-controls="acceleration: 70"></a-entity>
       </a-entity>
 
-      <!-- 地面（scale 修正済み） -->
+      <!-- 地面 -->
       <a-entity
         gltf-model="#kusa"
         position="0 -10 0"
@@ -113,16 +117,24 @@
         scale="100 100 100">
       </a-entity>
 
+      <!-- sky2.glb（追加済み） -->
+      <a-entity
+        gltf-model="#sky"
+        position="0 0 0"
+        rotation="0 90 0"
+        scale="10 10 10">
+      </a-entity>
+
+      <!-- 桜リング -->
       <a-entity
         skr="
           radii: 50, 200;
           counts: 8, 60;
-          scales: 100 100 100 | 100 100 100;
+          scales: 80 80 80 | 80 80 80;
           model: #test1;
           yOffset: -10;">
       </a-entity>
 
-      <a-sky color="#AFDFE4"></a-sky>
     </a-scene>
   </body>
 </html>
