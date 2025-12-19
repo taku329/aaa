@@ -2,11 +2,48 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>VR Cherry Blossoms - movement-controls</title>
+    <title>VR Cherry Blossoms - Controller World Move</title>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
 
     <script>
+      /* --- スティック操作で世界を動かすコンポーネント --- */
+      AFRAME.registerComponent('world-mover', {
+        init: function () {
+          this.input = { moveX: 0, moveZ: 0, rotY: 0 };
+
+          // スティックの入力を監視
+          this.el.sceneEl.addEventListener('axismove', (evt) => {
+            const axes = evt.detail.axis;
+            // 左手：移動
+            if (evt.target.getAttribute('oculus-touch-controls').hand === 'left') {
+              this.input.moveX = (Math.abs(axes[2] || axes[0]) > 0.1) ? (axes[2] || axes[0]) : 0;
+              this.input.moveZ = (Math.abs(axes[3] || axes[1]) > 0.1) ? (axes[3] || axes[1]) : 0;
+            }
+            // 右手：回転
+            if (evt.target.getAttribute('oculus-touch-controls').hand === 'right') {
+              this.input.rotY = (Math.abs(axes[2] || axes[0]) > 0.1) ? (axes[2] || axes[0]) : 0;
+            }
+          });
+        },
+        tick: function (time, delta) {
+          const dt = delta / 1000;
+          const MOVE_SPEED = 20 * dt; 
+          const ROT_SPEED = 70 * dt;
+
+          if (this.input.moveX !== 0 || this.input.moveZ !== 0) {
+            let pos = this.el.getAttribute('position');
+            pos.x -= this.input.moveX * MOVE_SPEED;
+            pos.z -= this.input.moveZ * MOVE_SPEED;
+            this.el.setAttribute('position', pos);
+          }
+          if (this.input.rotY !== 0) {
+            let rot = this.el.getAttribute('rotation');
+            rot.y += this.input.rotY * ROT_SPEED;
+            this.el.setAttribute('rotation', rot);
+          }
+        }
+      });
+
       /* --- 花びら落下処理 --- */
       AFRAME.registerComponent('petal-fall', {
         schema: { floorY: { type: 'number', default: -10 }, topY: { type: 'number', default: 50 } },
@@ -94,18 +131,13 @@
         <a-asset-item id="wagasa" src="wagasa_1_01.glb"></a-asset-item>
       </a-assets>
 
-      <a-entity id="cameraRig" 
-                movement-controls="controls: oculus-touch, keyboard; speed: 0.5; fly: false"
-                position="0 0 0">
-        <a-entity camera 
-                  position="0 1.6 0" 
-                  look-controls="pointerLockEnabled: true">
-        </a-entity>
+      <a-entity id="cameraRig" position="0 0 0">
+        <a-entity camera position="0 1.6 0" look-controls></a-entity>
         <a-entity oculus-touch-controls="hand: left"></a-entity>
         <a-entity oculus-touch-controls="hand: right"></a-entity>
       </a-entity>
 
-      <a-entity id="world">
+      <a-entity id="world" world-mover>
         <a-entity id="world-content">
           <a-entity gltf-model="#kusa" position="0 -10 0" scale="100 100 100"></a-entity>
           <a-entity skr="model: #test1; yOffset: -10;"></a-entity>
